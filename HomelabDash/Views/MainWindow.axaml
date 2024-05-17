@@ -15,9 +15,15 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <StackPanel>
-        <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Top"/>
-        <Button Content="Broadcast" Command="{Binding Broadcast}"/>
-        <ListBox ItemsSource="{Binding MyItems}"/>
-    </StackPanel>
+    <DockPanel >
+        <TextBlock DockPanel.Dock="Top" Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+        <Button DockPanel.Dock="Top" Content="Broadcast" Command="{Binding Broadcast}"/>
+        <DataGrid ItemsSource="{Binding MyItems}" IsReadOnly="true" BorderThickness="1" BorderBrush="Red">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Hostname"  Binding="{Binding Name}"/>
+                <DataGridTextColumn Header="OS" Binding="{Binding OS}" />
+                <DataGridTextColumn Header="IP" Binding="{Binding ResponseFrom}"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
 </Window>

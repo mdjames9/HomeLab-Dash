@@ -1,5 +1,6 @@
 using System;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
@@ -14,7 +15,11 @@ public partial class App : Application
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
-        Networking.Instance.Start();
+        if(!Design.IsDesignMode)
+        {
+            Networking.Initialize();
+            Networking.Instance.Start();
+        }
     }
 
     public override void OnFrameworkInitializationCompleted()
@@ -36,6 +41,9 @@ public partial class App : Application
 
     public void Closing(object? sender, EventArgs e)
     {
-        Networking.Instance.Stop();
+        if(!Design.IsDesignMode)
+        {
+            Networking.Instance.Stop();
+        }
     }
 }

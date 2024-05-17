@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection.Metadata;
 
 namespace HomelabDash;
 
@@ -20,24 +22,25 @@ public class Networking
     /// <summary>
     /// Instance for networking operations.
     /// </summary>
-    public static Networking Instance {get; private set;}
+    public static Networking Instance {get; private set;} = null!;
     
     System.Threading.CancellationTokenSource _TaskCanceller;
 
     /// <summary>
     /// Called when the server gets data from a client.
     /// </summary>
-    public event EventHandler<string>? NewItem;
+    public event EventHandler<ClientInformation>? NewItem;
 
-    static Networking()
-    {
-        Instance = new Networking();
-    }
 
     public Networking()
     {
         _Listener = new UdpClient(60000);
         _TaskCanceller = new System.Threading.CancellationTokenSource();
+    }
+
+    public static void Initialize()
+    {
+                Instance = new Networking();
     }
 
     public void Broadcast()
@@ -65,9 +68,21 @@ public class Networking
                 var data = await _Listener.ReceiveAsync(_TaskCanceller.Token);
                 using MemoryStream ms = new MemoryStream(data.Buffer);
                 using BinaryReader br = new BinaryReader(ms);
-                string clientName = br.ReadString();
-                Console.WriteLine("Got reply packet.");
-                NewItem?.Invoke(this, clientName);
+
+                ClientInformation ci = new ClientInformation();
+
+                //packet is hostname, version, ipaddress list.
+                ci.Name = br.ReadString();
+                ci.OS = br.ReadString();
+                int ipCount = br.ReadInt32();
+                List<string> clientIPs = new();
+                for(int i = 0; i < ipCount; i++)
+                {
+                    ci.IPs.Add(br.ReadString());
+                }
+                ci.ResponseFrom = data.RemoteEndPoint.Address.ToString();
+
+                NewItem?.Invoke(this, ci);
             }
         }
         catch (System.OperationCanceledException)
